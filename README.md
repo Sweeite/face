@@ -4,7 +4,7 @@ Gradio web app built on [roop](https://github.com/s0md3v/roop): swap a source fa
 
 ## Run on RunPod
 
-1. **Deploy a pod** with the **RunPod PyTorch 2.4.0** template (Python 3.11). Any NVIDIA GPU works; an RTX 4090 or A40 is plenty.
+1. **Deploy a pod** with any **RunPod PyTorch** template (2.1 is a safe pick). Setup builds its own Python 3.10 + CUDA 11.8 environment in `/workspace/venv`, so the template's Python version doesn't matter. Use an RTX 4090, A40, A6000 or L40S (not RTX 50-series / B200).
 2. **Edit the template** before deploying:
    - Expose HTTP port: `7860`
    - Volume mount path: `/workspace` (outputs and the code persist across restarts)

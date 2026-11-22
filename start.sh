@@ -4,6 +4,10 @@
 #   bash start.sh --bg     keep running after you close the terminal; log in app.log
 set -euo pipefail
 cd "$(dirname "$0")"
+if [ ! -x /workspace/venv/bin/python ]; then
+  echo "Not set up yet - run: bash runpod_setup.sh"; exit 1
+fi
+bash ./runpod_sysdeps.sh
 source ./runpod_env.sh
 mkdir -p /workspace/outputs
 

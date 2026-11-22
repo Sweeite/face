@@ -1,6 +1,7 @@
 # Sourced by runpod_setup.sh and start.sh.
-# Puts the CUDA/cuDNN libraries that came with pip on the loader path so
-# onnxruntime-gpu can find them.
+# Uses the app's own Python in /workspace/venv and puts the CUDA/cuDNN
+# libraries that came with pip on the loader path for onnxruntime-gpu.
+export PATH="/workspace/venv/bin:$PATH"
 NV_LIBS=$(python - <<'EOF'
 import glob, os, site
 dirs = []
