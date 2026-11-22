@@ -15,6 +15,7 @@ from roop.core import (
 )
 from roop.processors.frame.core import get_frame_processors_modules
 from roop.utilities import normalize_output_path
+from roop.predicter import predict_image
 
 DEFAULT_OUTPUT_DIR = "/workspace/outputs"
 NAME_PREFIX = "a"
@@ -67,6 +68,9 @@ def swap_face_single(source_file, target_file, do_enhancer, output_dir):
     Image.fromarray(source_file).save(source_path)
     Image.fromarray(target_file).save(target_path)
 
+    if predict_image(target_path):
+        return None, "Blocked: the target image looks explicit."
+
     index = _next_index(output_dir)
     output_path = os.path.join(output_dir, f"{NAME_PREFIX}{index}.jpg")
 
@@ -93,16 +97,21 @@ def swap_face_bulk(source_file, target_files, do_enhancer, output_dir, progress=
     source_path = os.path.join(work_dir, "source.jpg")
     Image.fromarray(source_file).save(source_path)
 
-    start_index = _next_index(output_dir)
+    next_index = _next_index(output_dir)
     saved_paths = []
+    blocked = 0
     total = len(target_files)
 
     for i, target_arr in enumerate(target_files):
         progress(i / total, desc=f"Processing {i+1}/{total}")
         target_path = os.path.join(work_dir, f"target_{i:04d}.jpg")
-        output_path = os.path.join(output_dir, f"{NAME_PREFIX}{start_index + i}.jpg")
-
         Image.fromarray(target_arr).save(target_path)
+
+        if predict_image(target_path):
+            blocked += 1
+            continue
+
+        output_path = os.path.join(output_dir, f"{NAME_PREFIX}{next_index}.jpg")
         _setup_globals(source_path, target_path, output_path, do_enhancer)
 
         ok = True
@@ -115,6 +124,7 @@ def swap_face_bulk(source_file, target_files, do_enhancer, output_dir, progress=
             start()
             if os.path.exists(roop.globals.output_path):
                 saved_paths.append(roop.globals.output_path)
+                next_index += 1
 
     progress(1.0, desc="Done")
 
@@ -124,6 +134,8 @@ def swap_face_bulk(source_file, target_files, do_enhancer, output_dir, progress=
         status = f"Saved {len(saved_paths)} image(s) to {output_dir} ({first} – {last})"
     else:
         status = "No images were saved."
+    if blocked:
+        status += f" Skipped {blocked} explicit image(s)."
 
     return saved_paths, status
 
